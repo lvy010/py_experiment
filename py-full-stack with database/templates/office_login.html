@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>教研室端登录</h1>
+  <form method="post" class="form">
+    <label>
+      教研室名称：
+      <input type="text" name="office_name" placeholder="例如：软件工程教研室">
+    </label>
+    <p class="hint">为简化课程实验，本示例不做账号密码，仅通过教研室名称区分。</p>
+    <button type="submit" class="btn primary">进入教研室端</button>
+  </form>
+{% endblock %}
+
+

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-header">
+    <h1>教研室端：{{ office_name }}</h1>
+    <a href="{{ url_for('office_logout') }}" class="btn small">退出登录</a>
+  </div>
+
+  <section class="card">
+    <h2>课题审核</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>课题编号</th>
+          <th>课题名称</th>
+          <th>教师</th>
+          <th>类别</th>
+          <th>难度</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in projects %}
+          <tr>
+            <td>{{ p["project_id"] }}</td>
+            <td>{{ p["project_name"] }}</td>
+            <td>{{ p["teacher_name"] }}</td>
+            <td>{{ p["category"] }}</td>
+            <td>{{ p["difficulty"] }}</td>
+            <td>{{ p["status"] }}</td>
+            <td>
+              {% if p["status"] in ["待审核","已驳回"] %}
+                <form method="post" action="{{ url_for('audit_project') }}" class="inline">
+                  <input type="hidden" name="project_id" value="{{ p['project_id'] }}">
+                  <button name="action" value="approve" class="btn small">通过</button>
+                  <button name="action" value="reject" class="btn small danger">驳回</button>
+                </form>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7">暂无课题。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">可根据课题难度是否匹配专业培养目标等标准进行审核，本示例只实现状态标记。</p>
+  </section>
+
+  <!-- 冲突协调与自动分配模块已移除，改为人工审核与教师确认分配 -->
+
+  <section class="card">
+    <h2>分配映射（学生 - 课题 - 指导教师）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>学生</th>
+          <th>学生编号</th>
+          <th>课题编号</th>
+          <th>课题名称</th>
+          <th>教师</th>
+          <th>分配状态</th>
+          <th>分配时间</th>
+          <th>协调人</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in allocation_map %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ a['student_name'] }}</td>
+            <td>{{ a['student_id'] }}</td>
+            <td>{{ a['project_id'] }}</td>
+            <td>{{ a['project_name'] }}</td>
+            <td>{{ a['teacher_name'] }}</td>
+            <td>{{ a['status'] }}</td>
+            <td>{{ a['allocation_time'] }}</td>
+            <td>{{ a['coordinator'] or '-' }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9">暂无分配记录</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>统计报表</h2>
+    <p>最终选题完成率：<strong>{{ completion_rate }}</strong></p>
+    <div class="grid">
+      <div>
+        <h3>教师课题与分配情况</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>教师</th>
+              <th>发布课题数</th>
+              <th>已分配课题数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in teacher_stats %}
+              <tr>
+                <td>{{ t["teacher_name"] }}</td>
+                <td>{{ t["project_count"] }}</td>
+                <td>{{ t["allocated_count"] }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="3">暂无教师数据</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>学生志愿与分配情况</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>学生</th>
+              <th>志愿数量</th>
+              <th>是否已分配</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in student_stats %}
+              <tr>
+                <td>{{ s["student_name"] }}</td>
+                <td>{{ s["volunteer_count"] }}</td>
+                <td>{{ "是" if s["has_allocation"] else "否" }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="3">暂无学生数据</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="hint">如果需要提交课程报告中的“Excel 报表”，可在浏览器中导出为 Excel 或自行编写导出功能。</p>
+  </section>
+{% endblock %}
+
+

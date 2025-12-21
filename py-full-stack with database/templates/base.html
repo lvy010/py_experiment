@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>毕业论文选题管理系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="logo">毕业论文选题管理系统</div>
+      <nav class="nav">
+        <a href="{{ url_for('index') }}">首页</a>
+        <a href="{{ url_for('student_portal') }}">学生端</a>
+        <a href="{{ url_for('teacher_portal') }}">教师端</a>
+        <a href="{{ url_for('office_portal') }}">教研室端</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-list">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>数据库课程设计系统</span>
+    </div>
+  </footer>
+</body>
+</html>
+
+

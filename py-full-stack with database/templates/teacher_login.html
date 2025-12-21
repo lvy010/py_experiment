@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>教师端登录</h1>
+  <form method="post" class="form">
+    <label>
+      教师编号：
+      <input type="text" name="teacher_id" placeholder="例如：T001" required>
+    </label>
+    <p class="hint">为简化课程实验，本示例不做密码认证，仅通过教师编号区分教师。</p>
+    <button type="submit" class="btn primary">进入教师端</button>
+  </form>
+{% endblock %}
+
+

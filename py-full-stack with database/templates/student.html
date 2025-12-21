@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-header">
+    <h1>学生端：{{ student["student_name"] }}（{{ student["student_id"] }}）</h1>
+    <a href="{{ url_for('student_logout') }}" class="btn small">退出登录</a>
+  </div>
+
+  <section class="card">
+    <h2>系统通知</h2>
+    {% if notifications %}
+      <ul>
+        {% for n in notifications %}
+          <li>{{ n['created_time'] }} — {{ n['message'] }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>暂无新的通知。</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>课题查询</h2>
+    <form method="post" class="form">
+      <input type="hidden" name="student_id" value="{{ student['student_id'] }}">
+      <div class="form-row">
+        <label>
+          教师姓名：
+          <input type="text" name="teacher_name" placeholder="模糊查询">
+        </label>
+        <label>
+          课题类别：
+          <input type="text" name="category" placeholder="如：计算机应用">
+        </label>
+        <label>
+          难度：
+          <select name="difficulty">
+            <option value="">全部</option>
+            <option value="低">低</option>
+            <option value="中">中</option>
+            <option value="高">高</option>
+          </select>
+        </label>
+      </div>
+      <button type="submit" class="btn">查询可选课题</button>
+    </form>
+
+    <h3>可选课题列表</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>课题编号</th>
+          <th>课题名称</th>
+          <th>类别</th>
+          <th>难度</th>
+          <th>教师</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in projects %}
+          <tr>
+            <td>{{ p["project_id"] }}</td>
+            <td>{{ p["project_name"] }}</td>
+            <td>{{ p["category"] }}</td>
+            <td>{{ p["difficulty"] }}</td>
+            <td>{{ p["teacher_name"] }}</td>
+            <td>{{ p["status"] }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6">暂无符合条件的课题</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>志愿填报（最多 3 个，不可重复）</h2>
+    <form method="post" action="{{ url_for('submit_volunteer') }}" class="form">
+      <input type="hidden" name="student_id" value="{{ student['student_id'] }}">
+      <div class="form-row">
+        {% for seq in [1,2,3] %}
+          <label>
+            第 {{ seq }} 志愿：
+            <select name="project_{{ seq }}">
+              <option value="">（不填）</option>
+              {% for p in projects %}
+                <option value="{{ p['project_id'] }}">{{ p["project_id"] }} - {{ p["project_name"] }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn primary">提交志愿</button>
+    </form>
+
+    <h3>已提交志愿</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>志愿顺序</th>
+          <th>课题编号</th>
+          <th>课题名称</th>
+          <th>教师</th>
+          <th>类别</th>
+          <th>难度</th>
+          <th>提交时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in volunteers %}
+          <tr>
+            <td>{{ v["sequence"] }}</td>
+            <td>{{ v["project_id"] }}</td>
+            <td>{{ v["project_name"] }}</td>
+            <td>{{ v["teacher_name"] }}</td>
+            <td>{{ v["category"] }}</td>
+            <td>{{ v["difficulty"] }}</td>
+            <td>{{ v["submit_time"] }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7">暂未提交任何志愿</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>分配结果</h2>
+    {% if allocation %}
+      <p>分配状态：<strong>{{ allocation["status"] }}</strong></p>
+      <p>课题：{{ allocation["project_id"] }} - {{ allocation["project_name"] }}</p>
+      <p>指导教师：{{ allocation["teacher_name"] }} （{{ allocation["teacher_phone"] }}）</p>
+      <p>协调人：{{ allocation["coordinator"] }}，时间：{{ allocation["allocation_time"] }}</p>
+    {% else %}
+      <p>暂未有分配结果。</p>
+    {% endif %}
+  </section>
+{% endblock %}
+
+

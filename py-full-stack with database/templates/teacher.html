@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-header">
+    <h1>教师端：{{ teacher["teacher_name"] }}（{{ teacher["teacher_id"] }}）</h1>
+    <a href="{{ url_for('teacher_logout') }}" class="btn small">退出登录</a>
+  </div>
+  <p>所在教研室：{{ teacher["research_office"] }}，职称：{{ teacher["title"] }}，联系电话：{{ teacher["phone"] or "无" }}</p>
+  <p>可带课题限额：{{ teacher["max_projects"] }}，当前已分配：{{ teacher["max_projects"] - remaining }}，剩余：<strong>{{ remaining }}</strong></p>
+
+  <section class="card">
+    <h2>发布新课题</h2>
+    <form method="post" action="{{ url_for('create_project') }}" class="form">
+      <input type="hidden" name="teacher_id" value="{{ teacher['teacher_id'] }}">
+      <div class="form-row">
+        <label>
+          课题名称：
+          <input type="text" name="project_name" required>
+        </label>
+        <label>
+          课题类别：
+          <input type="text" name="category" required>
+        </label>
+        <label>
+          难度：
+          <select name="difficulty" required>
+            <option value="低">低</option>
+            <option value="中">中</option>
+            <option value="高">高</option>
+          </select>
+        </label>
+      </div>
+      <label>
+        课题要求：
+        <textarea name="requirements" rows="3" placeholder="简要描述选题背景、技术路线和成果要求"></textarea>
+      </label>
+      <button type="submit" class="btn primary">发布课题</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>本人课题列表（可修改 / 删除未被选择的课题）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>课题编号</th>
+          <th>名称</th>
+          <th>类别</th>
+          <th>难度</th>
+          <th>状态</th>
+          <th style="width: 220px;">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in projects %}
+          <tr>
+            <td>{{ p["project_id"] }}</td>
+            <td>{{ p["project_name"] }}</td>
+            <td>{{ p["category"] }}</td>
+            <td>{{ p["difficulty"] }}</td>
+            <td>{{ p["status"] }}</td>
+            <td>
+              <details>
+                <summary>修改</summary>
+                <form method="post" action="{{ url_for('update_project') }}" class="form-inline">
+                  <input type="hidden" name="teacher_id" value="{{ teacher['teacher_id'] }}">
+                  <input type="hidden" name="project_id" value="{{ p['project_id'] }}">
+                  <input type="text" name="project_name" value="{{ p['project_name'] }}" required>
+                  <input type="text" name="category" value="{{ p['category'] }}" required>
+                  <select name="difficulty" required>
+                    <option value="低" {% if p["difficulty"]=="低" %}selected{% endif %}>低</option>
+                    <option value="中" {% if p["difficulty"]=="中" %}selected{% endif %}>中</option>
+                    <option value="高" {% if p["difficulty"]=="高" %}selected{% endif %}>高</option>
+                  </select>
+                  <button type="submit" class="btn small">保存</button>
+                </form>
+              </details>
+              <form method="post" action="{{ url_for('delete_project') }}" class="inline">
+                <input type="hidden" name="teacher_id" value="{{ teacher['teacher_id'] }}">
+                <input type="hidden" name="project_id" value="{{ p['project_id'] }}">
+                <button type="submit" class="btn small danger">删除</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6">暂无课题</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>学生志愿情况</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>课题编号</th>
+          <th>课题名称</th>
+          <th>志愿顺序</th>
+          <th>学生</th>
+          <th>班级</th>
+          <th>专业</th>
+          <th>综合成绩</th>
+          <th>提交时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in volunteers %}
+          <tr>
+            <td>{{ v["project_id"] }}</td>
+            <td>{{ v["project_name"] }}</td>
+            <td>{{ v["sequence"] }}</td>
+            <td>{{ v["student_name"] }}</td>
+            <td>{{ v["class"] }}</td>
+            <td>{{ v["major"] }}</td>
+            <td>{{ "%.2f"|format(v["comprehensive_score"] or 0) }}</td>
+            <td>{{ v["submit_time"] }}</td>
+            <td>
+              {% if v["project_id"] in allocated_projects %}
+                已被分配
+              {% elif remaining <= 0 %}
+                名额已满
+              {% else %}
+                <form method="post" action="{{ url_for('teacher_select_student') }}" class="inline">
+                  <input type="hidden" name="teacher_id" value="{{ teacher['teacher_id'] }}">
+                  <input type="hidden" name="project_id" value="{{ v['project_id'] }}">
+                  <input type="hidden" name="student_id" value="{{ v['student_id'] }}">
+                  <button type="submit" class="btn small primary">确认该学生</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9">尚无学生选择您的课题。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">教师可根据学生综合成绩、专业匹配度等进行线下初步筛选，本示例系统仅提供信息展示。</p>
+  </section>
+{% endblock %}
+
+
