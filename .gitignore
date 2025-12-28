@@ -1,0 +1,8 @@
+.venv/
+digital_image/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
